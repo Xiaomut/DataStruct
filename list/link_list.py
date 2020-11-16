@@ -44,4 +44,5 @@ def print_linklist(lk):
 
 lk = create_linklist_head([1,2,3])
 lk2 = create_linklist_tail([1,2,3])
+print_linklist(lk)
 print_linklist(lk2)
