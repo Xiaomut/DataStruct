@@ -11,10 +11,12 @@
 尾插法
 """
 
+
 class Node:
-    def __init__(self, item):
-        self.item = item
-        self.next = None
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
 
 # 头插法
 def create_linklist_head(nums):
@@ -38,11 +40,12 @@ def create_linklist_tail(nums):
 
 def print_linklist(lk):
     while lk:
-        print(lk.item, end=',')
+        print(lk.val, end=',')
         lk = lk.next
 
 
-lk = create_linklist_head([1,2,3])
-lk2 = create_linklist_tail([1,2,3])
-print_linklist(lk)
-print_linklist(lk2)
+if __name__ == "__main__":
+    lk = create_linklist_head([1, 2, 3])
+    lk2 = create_linklist_tail([1, 2, 3])
+    print_linklist(lk)
+    print_linklist(lk2)
