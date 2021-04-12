@@ -21,7 +21,7 @@ class Solution:
         if not self.inArea(grid, r, c):
             return 0
         if grid[r][c] != 1:
-            return 0 
+            return 0    
         grid[r][c] = 2
 
         return 1 \
