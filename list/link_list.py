@@ -13,9 +13,9 @@
 
 
 class Node:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0):
         self.val = val
-        self.next = next
+        self.next = None
 
 
 # 头插法

@@ -14,7 +14,7 @@ def count_sort(nums, max_count=100):
     count = [0 for _ in range(max_count)]
     for val in nums:
         count[val] += 1
-    nums.clear()r
+    nums.clear()
     for index, val in enumerate(count):
         for i in range(val):
             nums.append(index)

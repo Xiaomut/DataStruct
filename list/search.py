@@ -15,7 +15,7 @@ def decorator(func):
        t1 = time.time()
        result = func(*args, **kwargs)
        t2 = time.time()
-       print(f'{func.__name__} running time: {t2-t1:.2f} secs.')
+       print(f'{func.__name__} running time: {t2-t1:.4f} secs.')
        return result
    return wrapper
 

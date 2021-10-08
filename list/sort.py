@@ -9,9 +9,12 @@
 
 
 """
-冒泡排序
-插入排序
-选择排序
+1. 冒泡排序
+2. 选择排序
+3. 插入排序
+4. 希尔排序
+
+5. 归并排序
 堆排序
 """
 
@@ -20,12 +23,19 @@ import random
 import sys
 sys.path.append('../')
 sys.path.append('./')
-
-from search import decorator
-
+from list.search import decorator
 
 
+# 1. 冒泡排序
 # 关键点在于  1. 取的范围  2. 还有循环次数 O(n**2)
+def bubbleSort(alist):
+    for passnum in range(len(alist)-1, 0, -1):
+        for i in range(passnum):
+            if alist[i] > alist[i+1]:
+                alist[i], alist[i+1] = alist[i+1], alist[i]
+
+
+# 短冒泡，判断出有序列表并终止排序过程
 @decorator
 def bubble_sort(nums):
     length = len(nums)
@@ -36,10 +46,10 @@ def bubble_sort(nums):
                 nums[j], nums[j+1] = nums[j+1], nums[j]
                 exchange = True
         if not exchange:
-            return 
-        
+            return None
 
-# O(n**2)
+
+# 2. 选择排序   O(n**2)
 @decorator
 def select_sout(nums):
     length = len(nums)
@@ -52,7 +62,8 @@ def select_sout(nums):
             nums[min_index], nums[i] = nums[i], nums[min_index]
 
 
-# O(n**2)
+# 3. 插入排序   O(n**2)
+@decorator
 def insert_sort(nums):
     length = len(nums)
     # 注意是从1开始
@@ -64,6 +75,27 @@ def insert_sort(nums):
             nums[j+1] = nums[j]
             j -= 1
         nums[j+1] = tmp
+
+
+# 4. 希尔排序 递减增量排序
+@decorator
+def shellSort(alist):
+    sublistcount = len(alist) // 2
+    while sublistcount > 0:
+        for startposition in range(sublistcount):
+            gapInsertionSort(alist, startposition, sublistcount)
+        print("After increments of size", sublistcount, "The list is", alist)
+        sublistcount = sublistcount // 2
+
+
+def gapInsertionSort(alist, start, gap):
+    for i in range(start+gap, len(alist), gap):
+        currentvalue = alist[i]
+        position = i
+        while position >= gap and alist[position-gap] > currentvalue:
+            alist[position] = alist[position-gap]
+            position = position-gap
+        alist[position] = currentvalue
 
 
 # 快排

@@ -14,8 +14,10 @@ import random
 class BiTreeNode:
     def __init__(self, data):
         self.data = data
+        self.bf = None
         self.lchild = None
         self.rchild = None
+        self.parent = None
 
 
 a = BiTreeNode('A')
@@ -43,17 +45,23 @@ root = e
 # 前序遍历：根左右  EACBDGF
 def pre_order(root):
     if root:
-        print(root.data, end=',')
+        print(root.data)
         pre_order(root.lchild)
         pre_order(root.rchild)
+
+
+# pre_order(root)
 
 
 # 中序遍历：左根右  ABCDEFG
 def in_order(root):
     if root:
         in_order(root.lchild)
-        print(root.data, end=',')
+        print(root.data)
         in_order(root.rchild)
+
+
+# in_order(root)
 
 
 # 后序遍历：左右根  BDCAFGE
@@ -64,6 +72,10 @@ def post_order(root):
         print(root.data, end=',')
 
 
+# post_order(root)
+
+
+# 按序遍历
 def level_order(root):
     queue = deque()
     queue.append(root)
@@ -84,6 +96,7 @@ def level_order(root):
 # post_order(root)
 # print()
 # level_order(root)
+# exit()
 
 
 class BST:
@@ -93,6 +106,7 @@ class BST:
             for num in nums:
                 self.insert_no_rec(num)
 
+    # 递归法
     def insert(self, node, val):
         if not node:
             node = BiTreeNode(val)
@@ -104,6 +118,7 @@ class BST:
             node.rchild.parent = node
         return node
 
+    # 非递归法
     def insert_no_rec(self, val):
         p = self.root
         if not p:
@@ -151,7 +166,7 @@ class BST:
     # 前序遍历：根左右  EACBDGF
     def pre_order(self, root):
         if root:
-            print(root.data, end=',')
+            print(root.data, end=', ')
             self.pre_order(root.lchild)
             self.pre_order(root.rchild)
 
@@ -159,7 +174,7 @@ class BST:
     def in_order(self, root):
         if root:
             self.in_order(root.lchild)
-            print(root.data, end=',')
+            print(root.data, end=', ')
             self.in_order(root.rchild)
 
     # 后序遍历：左右根  BDCAFGE
@@ -167,7 +182,7 @@ class BST:
         if root:
             self.post_order(root.lchild)
             self.post_order(root.rchild)
-            print(root.data, end=',')
+            print(root.data, end=', ')
 
     def __remove_node_1(self, node):
         # 情况1：node是叶子节点

@@ -39,8 +39,6 @@ from collections import deque
 
 q = deque()
 
-
-
 if __name__ == "__main__":
     q = Queue(5)
     # 之能存n-1

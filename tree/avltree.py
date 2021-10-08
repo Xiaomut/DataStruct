@@ -13,6 +13,7 @@ from bitree import BiTreeNode, BST
 class AVLNode(BiTreeNode):
     def __init__(self, data):
         BiTreeNode.__init__(self, data)
+        # balance factor 平衡因子
         self.bf = 0
 
 
@@ -136,7 +137,7 @@ class AVLTree(BST):
         while node.parent:
             if node.parent.lchild == node:  # 传递从左子树来的，左子树更沉
                 # 更新node.parent的bf
-                if node.parent.bf < 0:  # 原来node.parent.f == -1, 更新后变为 -2
+                if node.parent.bf < 0:  # 原来node.parent.bf == -1, 更新后变为 -2
                     # 做旋转
                     # 看node哪边沉
                     g = node.parent.parent
@@ -145,16 +146,16 @@ class AVLTree(BST):
                     else:
                         n = self.rotate_right(node.parent, node)
                     # 记得把n和g连起来
-                elif node.parent.bf > 0:  # 原来node.parent.f == 1, 更新后变为 0
+                elif node.parent.bf > 0:  # 原来node.parent.bf == 1, 更新后变为 0
                     node.parent.bf = 0
                     break
-                else:  # 原来node.parent.f == 0, 更新后变为 -1
+                else:  # 原来node.parent.bf == 0, 更新后变为 -1
                     node.parent.bf = -1
                     node = node.parent
                     continue
             else:  # 传递是从右子树来的，右子树更沉
                 # 更新node.parent的bf
-                if node.parent.bf > 0:  # 原来node.parent.f == 1, 更新后变为 2
+                if node.parent.bf > 0:  # 原来node.parent.bf == 1, 更新后变为 2
                     # 做旋转
                     # 看node哪边沉
                     g = node.parent.parent
@@ -163,10 +164,10 @@ class AVLTree(BST):
                     else:  # 右右，左旋
                         n = self.rotate_left(node.parent, node)
                     # 记得把n和g连起来
-                elif node.parent.bf < 0:  # 原来node.parent.f == -1, 更新后变为 0
+                elif node.parent.bf < 0:  # 原来node.parent.bf == -1, 更新后变为 0
                     node.parent.bf = 0
                     break
-                else:  # 原来node.parent.f == 0, 更新后变为 1
+                else:  # 原来node.parent.bf == 0, 更新后变为 1
                     node.parent.bf = 1
                     node = node.parent
                     continue
@@ -182,3 +183,9 @@ class AVLTree(BST):
             else:
                 self.root = n
                 break
+
+
+if __name__ == "__main__":
+    tree = AVLTree([9, 8, 7, 6, 5, 4, 3, 2, 1])
+    tree.pre_order(tree.root)
+    tree.in_order(tree.root)
