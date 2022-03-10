@@ -182,8 +182,14 @@ func main() {
 }
 ```
 
-## Golang的GPM
+## 4. Golang的并行机制
+
+### 4.1 GPM
 
 - `Goroutine: `就是咱们常用的用go关键字创建的执行体，它对应一个结构体g，结构体里保存了goroutine的堆栈信息
 - `Machine: `表示操作系统的线程
 - `Processor: `表示处理器，有了它才能建立G、M的联系
+
+### 4.2 RPC有哪几种
+
+

@@ -32,19 +32,6 @@ class Solution:
         return nums
 
 
-def random_pivot_partion(nums, l, r):
-    pivot = random.randint(l, r)
-    nums[r], nums[pivot] = nums[pivot], nums[r]
-    i = l - 1
-    for j in range(l, r):
-        if nums[j] < nums[r]:
-            i += 1
-            num[i], nums[j] = nums[j], nums[i]
-    i += 1
-    num[i], nums[r] = nums[r], nums[i]
-    return i
-
-
 if __name__ == "__main__":
     solution = Solution()
     nums = [5, 2, 3, 1]
