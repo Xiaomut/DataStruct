@@ -184,12 +184,17 @@ func main() {
 
 ## 4. Golang的并行机制
 
-### 4.1 GPM
+### 4.1 GMP
 
 - `Goroutine: `就是咱们常用的用go关键字创建的执行体，它对应一个结构体g，结构体里保存了goroutine的堆栈信息
-- `Machine: `表示操作系统的线程
-- `Processor: `表示处理器，有了它才能建立G、M的联系
+- `Machine: `表示操作系统的线程，M与内核线程是一一映射的关系
+- `Processor: `表示处理器，有了它才能建立G、M的联系。P管理着一组goroutine队列。P里面会存储当前goroutine运行的上下文环境（函数指针，堆栈地址及地址边界），P会对自己管理的goroutine队列做一些调度（比如把占用CPU时间较长的goroutine暂停、运行后续的goroutine等）当自己队列消费完了就去全局队列里取，如果全局队列也消费完了会去其他P队列抢任务
 
-### 4.2 RPC有哪几种
+### 4.2 Context
 
+Context的作用: 简化对于处理单个请求的多个goroutine之间的请求域的数据、取消信号、截止时间等相关操作，这些操作可能涉及多个API调用。请求取消或超时，所有用来处理该请求的goroutine都应该迅速退出，然后系统才能释放这些goroutine占用的资源
 
+- WithCancel
+- WithDeadline
+- WithTimeout
+- WithValue
