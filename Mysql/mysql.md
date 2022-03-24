@@ -4,6 +4,8 @@
 
 ### 1.1 MySQL Server 架构
 
+<div align="center" width="80%"><img src="./assets/MySQL Server.png"></div>
+
 自顶向下大致可以分为`网络连接层，服务层，存储引擎层，系统文件层`
 
 - 网络连接层
@@ -59,7 +61,6 @@
         ```sql
         show VARIABLES like "%datadir%";
         ```
-        - ...
 
 
 ### 1.2 SQL 运行机制
@@ -172,6 +173,9 @@
 
 ##### 2. InnoDB 磁盘结构
 ##### 3. InnoDB 后台线程
+
+<div align="center" width="80%"><img src="./assets/InnoDB线程模型.png"></div>
+
 ##### 4. InnoDB 数据存储结构
 
 分为一个ibd数据文件 -> Segment (段) —> Exent (区) -> Page (页) -> Row (行)
@@ -201,6 +205,7 @@ undo log采用段的方式管理和记录。在innodb数据文件中包含一种
 
 ##### 5. Redo Log 和 Binlog
 
+
 **Redo Log 介绍**
 
 指事务中修改的任何数据，将最新的数据备份存储的位置（Redo Log），被称为重做日志
@@ -209,6 +214,9 @@ undo log采用段的方式管理和记录。在innodb数据文件中包含一种
 
 为了实现事物的持久性而出现的产物
 
+```sql
+show variables like '%innodb_log%';
+```
 **Binlog**
 
 Redo Log属于InnoDB引擎所特有的日志，而MySQL Server也有自己的日志，即Binary Log（二进制日志），简称Binlog。Binlog时记录所有数据库表结构变更以及表数据修改的二进制日志，不会记录SELECT和SHOW这类操作。Binlog日志是以时事件形式记录，还包含语句所执行的消耗时间。开启Binlog日志有以下两个最重要的使用场景。
@@ -216,7 +224,132 @@ Redo Log属于InnoDB引擎所特有的日志，而MySQL Server也有自己的日
 - 数据恢复: 通过mysqlbinlog工具来恢复数据
 
 
+
+- Binlog写入机制
+
+    - 根据记录模式和操作触发 event 事件生成 Log event（事件触发执行机制）
+    - 将事务执行过程中产生 Log event 写入缓冲区，每个事务线程都有一个缓冲区
+    - Log Event 保存在一个 binlog_cache_mngr 数据结构中，在该结构中有两个缓冲区，一个是 stmt_cache，用于存放不支持事务的信息；另一个是 trx_cache，用于存放支持事务的信息。
+    - 事务在提交阶段会将产生的 Log event 写入到外部 Binlog 文件中。
+    - 不同事务以串行方式将 Log event 写入 Binlog 文件中，所以一个事务包含的 Log event 信息在 Binlog 文件中是连续的，中间不会插入其他事务的 Log event。
+
+```sql
+show variables like 'log_bin';
+```
+
+```sql
+-- 开启 Binlog 功能
+mysql> set global log_bin=mysqllogbin;
+ERROR 1238 (HY000): Variable 'log_bin' is a read only variable
+```
+
 **Redo Log 和 Binlog 区别**
 - Redo Log 属于InnoDB引擎功能，Binlog属于MySQL Server自带功能并且以二进制文件记录
 - Redo Log 属于物理日志，记录该数据页更新状态内容，Binlog是逻辑日志，记录更新过程
-- 
+- Redo Log 日志是循环写，日志空间大小是固定， Binlog 是追加写入，写完一个写下一个，不会覆盖使用。
+- Redo Log 作为服务器异常宕机后事务数据自动恢复使用， Binlog 可以作为主从复制和数据恢复使用。 Binlog 没有自动 crash-safe 能力
+
+# 2. 优化
+
+## 2.1 索引
+
+### 2.1.1 索引类型
+
+索引可以提升查询速度，会影响 where 查询，以及 order by 排序。MySQL 索引类型如下：
+
+- 从索引存储结构划分：B Tree 索引、Hash 索引、FULLTEXT 全文索引、R Tree 索引
+- 从应用层次划分：普通索引、唯一索引、主键索引、复合索引
+- 从索引键值类型划分：主键索引、辅助索引（二级索引）
+- 从数据存储和索引键值逻辑关系划分：聚集索引（聚簇索引）、非聚集索引（非聚簇索引）
+
+**普通索引**
+这是最基本的索引类型，基于普通字段建立的索引，没有任何限制。
+
+```sql
+CREATE INDEX <索引的名字> ON tablename (字段名);
+ALTER TABLE tablename ADD INDEX [索引的名字] (字段名);
+CREATE TABLE tablename ( [...], INDEX [索引的名字] (字段名) );  
+```
+
+**唯一索引**
+与"普通索引"类似，不同的就是：索引字段的值必须唯一，但 允许有空值 。在创建或修改表时追加唯一约束，就会自动创建对应的唯一索引。
+
+```sql
+CREATE UNIQUE INDEX <索引的名字> ON tablename (字段名);
+ALTER TABLE tablename ADD UNIQUE INDEX [索引的名字] (字段名);
+CREATE TABLE tablename ( [...], UNIQUE [索引的名字] (字段名) ;  
+```
+
+**主键索引**
+它是一种特殊的唯一索引，不允许有空值。在创建或修改表时追加主键约束即可，每个表只能有一个主键。
+```sql
+CREATE TABLE tablename ( [...], PRIMARY KEY (字段名) );
+ALTER TABLE tablename ADD PRIMARY KEY (字段名);  
+```
+
+**复合索引**
+单一索引是指索引列为一列的情况，即新建索引的语句只实施在一列上；用户可以在多个列上建立索引，这种索引叫做组复合索引（组合索引）。复合索引可以代替多个单一索引，相比多个单一索引复合索引所需的开销更小。
+
+索引同时有两个概念叫做窄索引和宽索引，窄索引是指索引列为1-2列的索引，宽索引也就是索引列超过2列的索引，设计索引的一个重要原则就是能用窄索引不用宽索引，因为窄索引往往比组合索引更有效。
+```sql
+CREATE INDEX <索引的名字> ON tablename (字段名1，字段名2...);
+ALTER TABLE tablename ADD INDEX [索引的名字] (字段名1，字段名2...);
+CREATE TABLE tablename ( [...], INDEX [索引的名字] (字段名1，字段名2...) );
+```
+
+全文索引
+查询操作在数据量比较少时，可以使用 like 模糊查询，但是对于大量的文本数据检索，效率很低。如果使用全文索引，查询速度会比 like 快很多倍。在MySQL 5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引，从 MySQL 5.6 开始 MyISAM 和 InnoDB 存储引擎均支持。
+
+```sql
+CREATE FULLTEXT INDEX <索引的名字> ON tablename (字段名);
+ALTER TABLE tablename ADD FULLTEXT [索引的名字] (字段名);
+CREATE TABLE tablename ( [...], FULLTEXT KEY [索引的名字] (字段名) ;
+```
+和常用的 like 模糊查询不同，全文索引有自己的语法格式，使用 match 和 against 关键字，比如：
+
+```sql
+select * from user
+where match(name) against('aaa');
+```
+全文索引使用注意事项：
+- 全文索引必须在字符串、文本字段上建立。
+- 全文索引字段值必须在最小字符和最大字符之间的才会有效。（innodb：3-84；myisam：4-84）
+- 全文索引字段值要进行切词处理，按 syntax 字符进行切割（参数 ft_boolean_syntax，默认 + -><()~*:""&|），例如 b+aaa，切分成 b 和 aaa
+- 全文索引匹配查询，默认使用的是等值匹配，例如 a 匹配 a，不会匹配 ab, ac。如果想匹配可以在布
+尔模式下搜索 a*
+
+### 2.1.1 索引原理
+
+MySQL官方对索引定义：是存储引擎用于快速查找记录的一种数据结构。需要额外开辟空间和数据维护工作。
+
+- 索引是物理数据页存储，在数据文件中（InnoDB，ibd文件），利用数据页（page）存储。
+- 索引可以加快检索速度，但是同时也会降低增删改操作速度，索引维护需要代价。
+索引涉及的理论知识：二分查找法、Hash 和 B+Tree
+
+**Hash 结构**
+Hash 底层实现是由 Hash 表来实现的，是根据键值 <key,value> 存储数据的结构。非常适合根据 key 查找 value 值，也就是单个 key 查询，或者说等值查询。
+
+InnoDB 自适应哈希索引是为了提升查询效率， InnoDB 存储引擎会监控表上各个索引页的查询，当 InnoDB 注意到某些索引值访问非常频繁时，会在内存中基于 B+Tree 索引再创建一个哈希索引，使得内存中的 B+Tree 索引具备哈希索引的功能，即能够快速定值访问频繁访问的索引页。
+
+InnoDB 自适应哈希索引：在使用 Hash 索引访问时，一次性查找就能定位数据，等值查询效率要优于 B+Tree 。
+
+自适应哈希索引的建立使得 InnoDB 存储引擎能自动根据索引页访问的频率和模式自动地为某些热点页建立哈希索引来加速访问。另外 InnoDB 自适应哈希索引的功能，用户只能选择开启或关闭功能，无法进行人工干涉
+
+```sql
+show engine innodb status \G;
+show variables like '%innodb_adaptive%';
+```
+
+**B+Tree 结构**
+
+- B-Tree 结构
+    - 索引值和 data 数据分布在整棵树结构中
+    - 每个节点可以存放多个索引值及对应的 data 数据
+    - 树节点中的多个索引值从左到右升序排列
+    - B树的搜索：从根节点开始，对节点内的索引值序列采用二分法查找，如果命中就结束查找。没有命中会进入子节点重复查找过程，直到所对应的的节点指针为空，或已经是叶子节点了才结束。
+- B+Tree结构
+
+    - 非叶子节点不存储 data 数据，只存储索引值，这样便于存储更多的索引值
+    - 叶子节点包含了所有的索引值和 data 数据
+    - 叶子节点用指针连接，提高区间的访问性能
+    - 相比 B 树，B+ 树进行范围查找时，只需要查找定位两个节点的索引值，然后利用叶子节点的指针进行遍历即可。而 B 树需要遍历范围内所有的节点和数据，显然 B+Tree 效率高。
