@@ -13,5 +13,5 @@ def singleNumbers(nums):
 
 
 if __name__ == "__main__":
-    res = singleNumbers(nums=[4, 1, 2, 1, 2, 3])
+    res = singleNumbers(nums=[5, 1, 2, 3, 1, 2])
     print(res)
