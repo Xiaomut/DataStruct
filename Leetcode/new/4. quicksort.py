@@ -9,7 +9,8 @@ import random
 
 class Solution:
     def randomized_partition(self, nums, l, r):
-        pivot = random.randint(l, r)
+        # pivot = random.randint(l, r)
+        pivot = 0
         nums[pivot], nums[r] = nums[r], nums[pivot]
         i = l - 1
         for j in range(l, r):
@@ -34,5 +35,5 @@ class Solution:
 
 if __name__ == "__main__":
     solution = Solution()
-    nums = [5, 2, 3, 1]
+    nums = [21, 88, 19, 45, 13, 25, 66, 33, 18]
     res = solution.sortArray(nums)
