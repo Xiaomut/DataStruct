@@ -36,7 +36,7 @@ Depthwise Convolution完成后的Feature map数量与输入层的通道数相同
 
 ## 1.1.2 逐点卷积（Pointwise Convolution）
 
-Pointwise Convolution的运算与常规卷积运算非常相似，它的卷积核的尺寸为 1×1×M，M为上一层的通道数。所以这里的卷积运算会将上一步的map在深度方向上进行加权组合，生成新的Feature map。有几个卷积核就有几个输出Feature map。（卷积核的shape即为: **1 x 1 x 输入通道数 x 输出通道数**）
+Pointwise Convolution的运算与常规卷积运算非常相似，它的卷积核的尺寸为 $1×1×M$ ，$M$ 为上一层的通道数。所以这里的卷积运算会将上一步的map在深度方向上进行加权组合，生成新的Feature map。有几个卷积核就有几个输出Feature map。（卷积核的shape即为: **1 x 1 x 输入通道数**）
 
 ```py
 class SeparableConv2d(nn.Module):
@@ -94,7 +94,9 @@ $T_0$ 就是初始restart的epoch数目，$T_{mult}$ 就是重启之后因子，
 - 解决方案
     - 构建恒等映射
     误差是衡量观测值和真实值之间的差距，残差是指预测值和观测值之间的差距。对于残差网络的命名原因，作者给出的解释是，网络的一层通常可以看做 $y=H(x)$，而残差网络的一个残差块可以表示为 $H(x)=F(x)+x$，也就是 $F(x)=H(x)-x$，在单位映射中， $y=x$ 便是观测值，而 $H(x)$ 是预测值，所以 $F(x)$ 便对应着残差，因此叫做残差网络。
-
+- 优势
+    - 残差网络中不会出现梯度消失的问题
+    - $L$ 层的梯度可以直接传递到任何一个比它浅的 $l$ 层（ $L$ 层可以表示为任意一个比它浅的 $l$ 层和他们之间的残差部分之和）
 
 ### 1.3.2 ResNeXt
 
@@ -146,8 +148,11 @@ class Denseblock(nn.Module):
 $$KL(P1||P2) = E_{x \in p1}log (\frac{p1}{p2}) = \int_{x} p1(x)log(\frac{p1(x)}{p2(x)}) $$
 
 $$JS(P1||P2) = \frac{1}{2} KL(P1||\frac{P1+P2}{2}) + \frac{1}{2} KL(P2||\frac{P1+P2}{2})$$
+
 a. 假设m个样本
 b. 计算采样样本的似然函数（使其分布尽可能相似）
+$$\theta^* = argmax_{\theta} L = arg max_{\theta} \prod_{i=1}^{m}P_G(x^i; \theta) = argmax_{\theta} \int_x P_{data}(x)log P_G(x; \theta)dx = argmin_{\theta} KL(P_{data}(x)||P_G(x;\theta)) $$
+
 
 $$min_G max_D V(D, G) = E_{x\in p_{data}(x)}[logD(x)] + E_{z \in p_{z(z)}}[log(1- D(G(z)))]$$
 
