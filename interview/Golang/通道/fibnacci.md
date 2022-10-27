@@ -1,7 +1,7 @@
 
 ## 斐波那契数列
 
-使用两个协程
+使用两个协程，三个通道
 
 ```go
 // courtesy of: http://sdh33b.blogspot.com/2009/12/fibonacci-in-go.html
